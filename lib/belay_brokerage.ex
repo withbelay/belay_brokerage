@@ -28,10 +28,6 @@ defmodule BelayBrokerage do
         Triplex.create(tenant, repo)
       end
 
-      for tenant <- Keyword.get(changes, :del, []) do
-        Triplex.drop(tenant, repo)
-      end
-
       for tenant <- Keyword.get(changes, :eq, []) do
         Ecto.Migrator.run(repo, Triplex.migrations_path(repo), :up, all: true, prefix: tenant)
       end
