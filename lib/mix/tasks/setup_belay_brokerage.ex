@@ -14,7 +14,7 @@ defmodule Mix.Tasks.BelayBrokerage.SetupTenants do
   def run(_args) do
     Ecto.Migrator.with_repo(BelayBrokerage.Repo, fn repo ->
       for tenant <- Application.fetch_env!(:belay_brokerage, :tenants) do
-        Triplex.create(tenant, repo)
+        {:ok, _} = Triplex.create(tenant, repo)
       end
     end)
   end
