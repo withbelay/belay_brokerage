@@ -35,7 +35,8 @@ defmodule BelayBrokerage.MixProject do
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:postgrex, ">= 0.0.0"},
       {:triplex, "~> 1.3.0"},
-      {:typed_ecto_schema, "~> 0.4.1"}
+      {:typed_ecto_schema, "~> 0.4.1"},
+      {:rabbit, "~> 0.20"}
     ]
   end
 
