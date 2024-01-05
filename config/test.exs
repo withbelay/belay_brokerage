@@ -1,8 +1,7 @@
 import Config
 
 config :belay_brokerage, BelayBrokerage.Repo,
-  url:
-    "postgres://postgres:postgres@localhost/belay_brokerage_test#{System.get_env("MIX_TEST_PARTITION")}",
+  url: "postgres://postgres:postgres@localhost/belay_brokerage_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 

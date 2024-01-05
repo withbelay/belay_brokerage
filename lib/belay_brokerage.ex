@@ -25,9 +25,9 @@ defmodule BelayBrokerage do
   @spec create_investor(String.t(), investor()) ::
           {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
   def create_investor(partner_id, attrs) do
-    attrs
-    |> Investor.new!()
-    |> Repo.insert(prefix: partner_id)
+    with {:ok, investor} <- Investor.new(attrs) do
+      Repo.insert(investor, prefix: partner_id)
+    end
   end
 
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
