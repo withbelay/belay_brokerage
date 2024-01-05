@@ -1,4 +1,4 @@
-defmodule BelayBrokerage.Sandbox.Repo.Migrations.V01 do
+defmodule BelayBrokerage.Repo.Migrations.CreateInvestors do
   use Ecto.Migration
 
   def change do
