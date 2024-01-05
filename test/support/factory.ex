@@ -1,5 +1,6 @@
 defmodule BelayBrokerage.Factory do
   alias BelayBrokerage.Repo
+  alias BelayBrokerage.Holding
   alias BelayBrokerage.Investor
 
   @default_tenant Application.compile_env!(:belay_brokerage, :tenants) |> List.first()
@@ -16,6 +17,14 @@ defmodule BelayBrokerage.Factory do
       postal_code: "19103",
       email: "johndoe@email.com",
       phone: "123-123-1234"
+    }
+  end
+
+  def build(:holding) do
+    %Holding{
+      investor_id: "id",
+      sym: "AAPL",
+      qty: Decimal.from_float(1.0)
     }
   end
 
