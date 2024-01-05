@@ -4,8 +4,10 @@ defmodule BelayBrokerage.Repo.Migrations.CreateHoldings do
   def change do
     create table(:holdings, primary_key: false) do
       add(:investor_id, :string, primary_key: true)
-      add(:sym, :string)
+      add(:sym, :string, primary_key: true)
       add(:qty, :decimal)
+
+      timestamps()
     end
   end
 end

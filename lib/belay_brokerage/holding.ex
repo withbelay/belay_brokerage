@@ -3,7 +3,7 @@ defmodule BelayBrokerage.Holding do
 
   typed_schema "holdings" do
     field(:investor_id, :string, primary_key: true)
-    field(:sym, :string)
+    field(:sym, :string, primary_key: true)
     field(:qty, :decimal)
 
     timestamps()
