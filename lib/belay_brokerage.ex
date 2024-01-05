@@ -7,6 +7,8 @@ defmodule BelayBrokerage do
   alias BelayBrokerage.Holding
   alias BelayBrokerage.Repo
 
+  import Ecto.Query
+
   @type investor :: %{
           required(:first_name) => String.t(),
           required(:last_name) => String.t(),
@@ -61,7 +63,9 @@ defmodule BelayBrokerage do
 
   @spec get_holdings(String.t(), String.t()) :: Holding.t()
   def get_holdings(partner_id, investor_id) do
-    Repo.get(Holding, investor_id, prefix: partner_id)
+    query = from(h in Holding, where: h.investor_id == ^investor_id)
+
+    Repo.all(query, prefix: partner_id)
   end
 
   @spec configure_tenants_up() :: :ok
