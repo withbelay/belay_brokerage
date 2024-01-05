@@ -10,12 +10,12 @@ defmodule BelayBrokerage.Transactions.Consumer do
 
   @impl true
   def handle_message(message) do
-    transaction_handler().handle_message(message.payload)
+    transaction_handler().handle_message(message)
   end
 
   @impl true
   def handle_error(message) do
-    transaction_handler().handle_error(message.payload)
+    transaction_handler().handle_error(message)
   end
 
   defp transaction_handler, do: Application.fetch_env!(:belay_brokerage, :transaction_handler)
