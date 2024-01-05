@@ -2,7 +2,9 @@ defmodule BelayBrokerage do
   @moduledoc """
   BelayBrokerage provides an interface against the BelayBrokerage defined DB
   """
+  alias BelayBrokerage.Transactions
   alias BelayBrokerage.Investor
+  alias BelayBrokerage.Holding
   alias BelayBrokerage.Repo
 
   @type investor :: %{
@@ -33,6 +35,33 @@ defmodule BelayBrokerage do
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
   def get_investor(partner_id, investor_id) do
     Repo.get(Investor, investor_id, prefix: partner_id)
+  end
+
+  @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t()) ::
+          {:ok, Holding.t()} | {:error, Ecto.Changeset.t()}
+  def holding_transaction(partner_id, investor_id, sym, qty_delta) do
+    :ok = Transactions.publish_transaction(investor_id, sym, qty_delta)
+
+    case Repo.get(Holding, investor_id, prefix: partner_id) do
+      nil ->
+        %Holding{}
+        |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta})
+        |> Repo.insert()
+
+      holding ->
+        new_qty = Decimal.add(holding.qty, qty_delta)
+
+        if Decimal.compare(new_qty, Decimal.new(0)) == :gt do
+          holding |> Holding.update_qty_changeset(qty_delta) |> Repo.update()
+        else
+          Repo.delete(holding)
+        end
+    end
+  end
+
+  @spec get_holdings(String.t(), String.t()) :: Holding.t()
+  def get_holdings(partner_id, investor_id) do
+    Repo.get(Holding, investor_id, prefix: partner_id)
   end
 
   @spec configure_tenants_up() :: :ok
