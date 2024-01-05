@@ -10,7 +10,7 @@ defmodule BelayBrokerage.Transactions.Connection do
 
   def init(:connection, opts) do
     # Perform runtime connection config
-    uri = System.get_env("RABBITMQ_URI", "amqp://guest:guest@localhost")
+    uri = Application.fetch_env!(:belay_brokerage, :rabbit_uri)
     opts = Keyword.put(opts, :uri, uri)
 
     {:ok, opts}

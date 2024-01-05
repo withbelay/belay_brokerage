@@ -44,6 +44,14 @@ config :my_app,
 config :belay_brokerage, tenants: ["tenant_a", "tenant_b"]
 ```
 
+1. You will need to add a rabbit URI and whether it's a consumer or producer of the transactions
+
+```
+config :belay_brokerage,
+  transaction_handler_type: :producer | :consumer,
+  uri: "amqp://guest:guest@localhost"
+```
+
 ### Prod / Fly Setup
 
 1. For fly, be sure to remember to set to IPV6 mode (prod.exs or runtime.exs)

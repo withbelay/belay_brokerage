@@ -7,6 +7,8 @@ defmodule BelayBrokerage.Application do
 
   @impl true
   def start(_type, _args) do
+    transaction_handler_type = Application.fetch_env!(:belay_brokerage, :transaction_handler_type)
+
     children = [
       BelayBrokerage.Repo,
       BelayBrokerage.Transactions.Connection,
@@ -21,7 +23,7 @@ defmodule BelayBrokerage.Application do
            destination: "belaybrokerage_transactions"
          ]
        ]},
-      transaction_children(Application.fetch_env!(:belay_brokerage, :transaction_handler_type))
+      transaction_children(transaction_handler_type)
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
