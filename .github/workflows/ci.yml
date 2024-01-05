@@ -61,4 +61,4 @@ jobs:
       - name: Setup ecto for belay_brokerage
         run: mix ecto.test.setup
       - name: Run tests w/ coverage report
-        run: mix coveralls.github
+        run: mix test
