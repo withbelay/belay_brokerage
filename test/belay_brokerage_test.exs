@@ -2,6 +2,7 @@ defmodule BelayBrokerageTest do
   use BelayBrokerage.DataCase
 
   alias BelayBrokerage.Investor
+  alias BelayBrokerage.Holding
 
   import BelayBrokerage.Factory
 
@@ -44,6 +45,53 @@ defmodule BelayBrokerageTest do
 
     test "returns nil when no investor exists" do
       assert BelayBrokerage.get_investor(@default_tenant, "some id") == nil
+    end
+  end
+
+  describe "get_holdings/2" do
+    test "retrieves all holdings" do
+      investor_id = "investor_id"
+      aapl_holding = insert!(:holding, %{investor_id: investor_id, sym: "AAPL"})
+      msft_holding = insert!(:holding, %{investor_id: investor_id, sym: "MSFT"})
+
+      holdings = BelayBrokerage.get_holdings(@default_tenant, investor_id)
+      assert aapl_holding in holdings
+      assert msft_holding in holdings
+    end
+  end
+
+  describe "holding_transaction/4" do
+    test "when no holding exists, insert one" do
+      investor_id = "id"
+      qty = Decimal.from_float(1.0)
+
+      assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, "AAPL", qty)
+
+      assert [holding] = BelayBrokerage.get_holdings(@default_tenant, investor_id)
+      assert holding.sym == "AAPL"
+      assert holding.investor_id == investor_id
+      assert holding.qty == qty
+    end
+
+    test "when a holding exists, increment or decrement qty to existing one" do
+      %{investor_id: investor_id, sym: sym, qty: existing_qty} = insert!(:holding)
+      delta_qty = Decimal.from_float(1.0)
+
+      assert {:ok, %Holding{}} =
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty)
+
+      assert [holding] = BelayBrokerage.get_holdings(@default_tenant, investor_id)
+      assert holding.qty == Decimal.add(existing_qty, delta_qty)
+    end
+
+    test "when a holding exists, and new qty is now 0, delete holding" do
+      %{investor_id: investor_id, sym: sym} = insert!(:holding, %{qty: Decimal.from_float(1.0)})
+      delta_qty = Decimal.from_float(-1.0)
+
+      assert {:ok, %Holding{}} =
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty)
+
+      assert BelayBrokerage.get_holdings(@default_tenant, investor_id) == []
     end
   end
 end

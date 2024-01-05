@@ -44,19 +44,19 @@ defmodule BelayBrokerage do
   def holding_transaction(partner_id, investor_id, sym, qty_delta) do
     :ok = Transactions.publish_transaction(investor_id, sym, qty_delta)
 
-    case Repo.get(Holding, investor_id, prefix: partner_id) do
+    case Repo.get_by(Holding, [investor_id: investor_id, sym: sym], prefix: partner_id) do
       nil ->
         %Holding{}
         |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta})
-        |> Repo.insert()
+        |> Repo.insert(prefix: partner_id)
 
       holding ->
         new_qty = Decimal.add(holding.qty, qty_delta)
 
         if Decimal.compare(new_qty, Decimal.new(0)) == :gt do
-          holding |> Holding.update_qty_changeset(qty_delta) |> Repo.update()
+          holding |> Holding.update_qty_changeset(new_qty) |> Repo.update(prefix: partner_id)
         else
-          Repo.delete(holding)
+          Repo.delete(holding, prefix: partner_id)
         end
     end
   end
