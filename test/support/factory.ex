@@ -1,6 +1,5 @@
 defmodule BelayBrokerage.Factory do
   alias BelayBrokerage.Repo
-  alias BelayBrokerage.Holding
   alias BelayBrokerage.Investor
 
   @default_tenant Application.compile_env!(:belay_brokerage, :tenants) |> List.first()
