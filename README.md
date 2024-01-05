@@ -49,7 +49,7 @@ config :belay_brokerage, tenants: ["tenant_a", "tenant_b"]
 ```
 config :belay_brokerage,
   transaction_handler_type: :producer | :consumer,
-  uri: "amqp://guest:guest@localhost"
+  rabbit_uri: "amqp://guest:guest@localhost"
 ```
 
 ### Prod / Fly Setup
