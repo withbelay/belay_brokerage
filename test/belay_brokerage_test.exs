@@ -96,7 +96,7 @@ defmodule BelayBrokerageTest do
       assert BelayBrokerage.get_holdings(@default_tenant, investor_id) == []
     end
 
-    test "pushes a rabbit message when transaction occurs" do
+    test "pushes a rabbit message when called successfully" do
       start_supervised!({TestTransactionHandler, self()})
 
       investor_id = "id"
@@ -107,6 +107,15 @@ defmodule BelayBrokerageTest do
 
       assert_receive {:handle_message,
                       %{decoded_payload: %{"investor_id" => ^investor_id, "sym" => ^sym, "qty" => "1.0"}}}
+    end
+
+    test "does not push a rabbit message when called unsuccessfully" do
+      start_supervised!({TestTransactionHandler, self()})
+
+      assert {:error, %Ecto.Changeset{errors: [qty: {"is invalid", _}]}} =
+               BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal")
+
+      refute_receive {:handle_message, _}
     end
   end
 end

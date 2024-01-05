@@ -42,23 +42,16 @@ defmodule BelayBrokerage do
   @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t()) ::
           {:ok, Holding.t()} | {:error, Ecto.Changeset.t()}
   def holding_transaction(partner_id, investor_id, sym, qty_delta) do
-    :ok = Transactions.publish_transaction(investor_id, sym, qty_delta)
+    Repo.transaction(fn ->
+      case insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta) do
+        {:ok, holding} ->
+          :ok = Transactions.publish_transaction(investor_id, sym, qty_delta)
+          holding
 
-    case Repo.get_by(Holding, [investor_id: investor_id, sym: sym], prefix: partner_id) do
-      nil ->
-        %Holding{}
-        |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta})
-        |> Repo.insert(prefix: partner_id)
-
-      holding ->
-        new_qty = Decimal.add(holding.qty, qty_delta)
-
-        if Decimal.compare(new_qty, Decimal.new(0)) == :gt do
-          holding |> Holding.update_qty_changeset(new_qty) |> Repo.update(prefix: partner_id)
-        else
-          Repo.delete(holding, prefix: partner_id)
-        end
-    end
+        {:error, reason} ->
+          Repo.rollback(reason)
+      end
+    end)
   end
 
   @spec get_holdings(String.t(), String.t()) :: Holding.t()
@@ -96,5 +89,23 @@ defmodule BelayBrokerage do
     end)
 
     :ok
+  end
+
+  defp insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta) do
+    case Repo.get_by(Holding, [investor_id: investor_id, sym: sym], prefix: partner_id) do
+      nil ->
+        %Holding{}
+        |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta})
+        |> Repo.insert(prefix: partner_id)
+
+      holding ->
+        new_qty = Decimal.add(holding.qty, qty_delta)
+
+        if Decimal.compare(new_qty, Decimal.new(0)) == :gt do
+          holding |> Holding.update_qty_changeset(new_qty) |> Repo.update(prefix: partner_id)
+        else
+          Repo.delete(holding, prefix: partner_id)
+        end
+    end
   end
 end
