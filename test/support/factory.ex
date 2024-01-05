@@ -32,8 +32,8 @@ defmodule BelayBrokerage.Factory do
     factory_name |> build() |> struct!(attributes)
   end
 
-  def insert!(factory_name, attributes \\ []) do
-    tenant = Keyword.get(attributes, :tenant, @default_tenant)
+  def insert!(factory_name, attributes \\ %{}) do
+    tenant = Map.get(attributes, :tenant, @default_tenant)
     factory_name |> build(attributes) |> Repo.insert!(prefix: tenant)
   end
 end
