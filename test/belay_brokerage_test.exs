@@ -1,8 +1,11 @@
 defmodule BelayBrokerageTest do
-  use ExUnit.Case
-  doctest BelayBrokerage
+  use BelayBrokerage.DataCase
 
-  test "greets the world" do
-    assert BelayBrokerage.hello() == :world
+  import BelayBrokerage.Factory
+
+  test "all_investors" do
+    investor = insert!(:investor)
+
+    assert investor in BelayBrokerage.all_investors(@default_tenant)
   end
 end
