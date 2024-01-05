@@ -1,5 +1,6 @@
 defmodule BelayBrokerage.Factory do
   alias BelayBrokerage.Repo
+  alias BelayBrokerage.Holding
   alias BelayBrokerage.Investor
 
   @default_tenant Application.compile_env!(:belay_brokerage, :tenants) |> List.first()
@@ -19,12 +20,20 @@ defmodule BelayBrokerage.Factory do
     }
   end
 
+  def build(:holding) do
+    %Holding{
+      investor_id: "id",
+      sym: "AAPL",
+      qty: Decimal.from_float(1.0)
+    }
+  end
+
   def build(factory_name, attributes) do
     factory_name |> build() |> struct!(attributes)
   end
 
-  def insert!(factory_name, attributes \\ []) do
-    tenant = Keyword.get(attributes, :tenant, @default_tenant)
+  def insert!(factory_name, attributes \\ %{}) do
+    tenant = Map.get(attributes, :tenant, @default_tenant)
     factory_name |> build(attributes) |> Repo.insert!(prefix: tenant)
   end
 end
