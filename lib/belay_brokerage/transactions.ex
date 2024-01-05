@@ -2,8 +2,10 @@ defmodule BelayBrokerage.Transactions do
   @belaybrokerage_exchange "belaybrokerage_exchange"
   @belaybrokerage_transactions_queue "belaybrokerage_transactions"
 
-  @callback handle_message(Rabbit.Message.t()) :: Rabbit.Consumer.message_response()
-  @callback handle_error(Rabbit.Message.t()) :: Rabbit.Consumer.message_response()
+  defmodule Handler do
+    @callback handle_message(Rabbit.Message.t()) :: Rabbit.Consumer.message_response()
+    @callback handle_error(Rabbit.Message.t()) :: Rabbit.Consumer.message_response()
+  end
 
   defmodule Message do
     use BelayBrokerage.SimpleTypedSchema
