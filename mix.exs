@@ -32,11 +32,12 @@ defmodule BelayBrokerage.MixProject do
   defp deps do
     [
       {:ecto_sql, "~> 3.10"},
+      {:jason, "~> 1.3"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:postgrex, ">= 0.0.0"},
+      {:rabbit, "~> 0.20"},
       {:triplex, "~> 1.3.0"},
-      {:typed_ecto_schema, "~> 0.4.1"},
-      {:rabbit, "~> 0.20"}
+      {:typed_ecto_schema, "~> 0.4.1"}
     ]
   end
 
