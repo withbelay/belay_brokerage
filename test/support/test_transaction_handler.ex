@@ -9,16 +9,20 @@ defmodule BelayBrokerage.TestTransactionHandler do
 
   @impl BelayBrokerage.Transactions.Handler
   def handle_message(msg) do
-    test_pid = Agent.get(__MODULE__, & &1)
-    send(test_pid, {:handle_message, msg})
+    if Process.whereis(__MODULE__) do
+      test_pid = Agent.get(__MODULE__, & &1)
+      send(test_pid, {:handle_message, msg})
+    end
 
     {:ack, msg}
   end
 
   @impl BelayBrokerage.Transactions.Handler
   def handle_error(msg) do
-    test_pid = Agent.get(__MODULE__, & &1)
-    send(test_pid, {:handle_message, msg})
+    if Process.whereis(__MODULE__) do
+      test_pid = Agent.get(__MODULE__, & &1)
+      send(test_pid, {:handle_message, msg})
+    end
 
     {:ack, msg}
   end
