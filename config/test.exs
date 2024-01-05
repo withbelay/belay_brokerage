@@ -9,6 +9,7 @@ config :belay_brokerage, BelayBrokerage.Repo,
 config :logger, level: :warning
 
 config :belay_brokerage,
-  transaction_handler_type: :producer,
+  transaction_handler_type: :producer_consumer,
+  transaction_handler: BelayBrokerage.TestTransactionHandler,
   rabbit_uri: "amqp://guest:guest@localhost",
   tenants: ["belay_brokerage_test_tenant"]

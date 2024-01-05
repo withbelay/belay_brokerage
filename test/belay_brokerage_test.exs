@@ -4,6 +4,8 @@ defmodule BelayBrokerageTest do
   alias BelayBrokerage.Investor
   alias BelayBrokerage.Holding
 
+  alias BelayBrokerage.TestTransactionHandler
+
   import BelayBrokerage.Factory
 
   test "all_investors/1" do
@@ -92,6 +94,19 @@ defmodule BelayBrokerageTest do
                BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty)
 
       assert BelayBrokerage.get_holdings(@default_tenant, investor_id) == []
+    end
+
+    test "pushes a rabbit message when transaction occurs" do
+      start_supervised!({TestTransactionHandler, self()})
+
+      investor_id = "id"
+      sym = "AAPL"
+      qty = Decimal.from_float(1.0)
+
+      assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, qty)
+
+      assert_receive {:handle_message,
+                      %{decoded_payload: %{"investor_id" => ^investor_id, "sym" => ^sym, "qty" => "1.0"}}}
     end
   end
 end
