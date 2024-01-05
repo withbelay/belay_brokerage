@@ -67,7 +67,7 @@ jobs:
         run: mix format --check-formatted
       - name: Check warnings
         run: mix compile --warnings-as-errors
-      - name: Setup ecto for belay_brokerage
+      - name: Setup ecto
         run: mix ecto.test.setup
-      - name: Run tests w/ coverage report
+      - name: Run tests
         run: mix test
