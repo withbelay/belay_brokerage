@@ -41,12 +41,7 @@ defmodule BelayBrokerage.MixProject do
 
   defp aliases do
     [
-      "ecto.test.setup": [
-        "ecto.create -- quiet",
-        "ecto.migrate",
-        "belay_brokerage.setup_tenants",
-        "triplex.migrate"
-      ],
+      "ecto.test.setup": ["ecto.create -- quiet", "ecto.migrate", "belay_brokerage.setup_tenants", "triplex.migrate"],
       "ecto.test.reset": ["ecto.drop", "ecto.test.setup"]
     ]
   end
