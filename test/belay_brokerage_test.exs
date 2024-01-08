@@ -103,10 +103,34 @@ defmodule BelayBrokerageTest do
       sym = "AAPL"
       qty = Decimal.from_float(1.0)
 
+      # When qty is positive
       assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, qty)
 
+      # type is buy
       assert_receive {:handle_message,
-                      %{decoded_payload: %{"investor_id" => ^investor_id, "sym" => ^sym, "qty" => "1.0"}}}
+                      %{
+                        decoded_payload: %{
+                          "investor_id" => ^investor_id,
+                          "sym" => ^sym,
+                          "qty" => "1.0",
+                          "type" => "buy"
+                        }
+                      }}
+
+      # When qty is negative
+      assert {:ok, %Holding{}} =
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, Decimal.negate(qty))
+
+      # type is sell
+      assert_receive {:handle_message,
+                      %{
+                        decoded_payload: %{
+                          "investor_id" => ^investor_id,
+                          "sym" => ^sym,
+                          "qty" => "-1.0",
+                          "type" => "sell"
+                        }
+                      }}
     end
 
     test "does not push a rabbit message when called unsuccessfully" do

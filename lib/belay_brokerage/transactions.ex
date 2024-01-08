@@ -40,6 +40,7 @@ defmodule BelayBrokerage.Transactions do
       field(:investor_id, :string)
       field(:sym, :string)
       field(:qty, :decimal)
+      field(:type, Ecto.Enum, values: [:buy, :sell])
     end
 
     def_new(required: :all)
@@ -47,11 +48,13 @@ defmodule BelayBrokerage.Transactions do
 
   @spec publish_transaction(String.t(), String.t(), Decimal.t()) :: :ok | {:error, any()}
   def publish_transaction(investor_id, sym, qty) do
+    transaction_type = if Decimal.gt?(qty, Decimal.new(0)), do: :buy, else: :sell
+
     Rabbit.Producer.publish(
       BelayBrokerage.Transactions.Producer,
       @belaybrokerage_exchange,
       @belaybrokerage_transactions_queue,
-      Message.new!(%{investor_id: investor_id, sym: sym, qty: qty}),
+      Message.new!(%{investor_id: investor_id, sym: sym, qty: qty, type: transaction_type}),
       content_type: "application/json"
     )
   end
