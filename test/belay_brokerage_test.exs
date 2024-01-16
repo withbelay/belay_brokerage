@@ -67,7 +67,8 @@ defmodule BelayBrokerageTest do
       investor_id = "id"
       qty = Decimal.from_float(1.0)
 
-      assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, "AAPL", qty)
+      assert {:ok, %Holding{}} =
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, "AAPL", qty, "brokerage")
 
       assert [holding] = BelayBrokerage.get_holdings(@default_tenant, investor_id)
       assert holding.sym == "AAPL"
@@ -80,7 +81,7 @@ defmodule BelayBrokerageTest do
       delta_qty = Decimal.from_float(1.0)
 
       assert {:ok, %Holding{}} =
-               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty)
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty, "brokerage")
 
       assert [holding] = BelayBrokerage.get_holdings(@default_tenant, investor_id)
       assert holding.qty == Decimal.add(existing_qty, delta_qty)
@@ -91,7 +92,7 @@ defmodule BelayBrokerageTest do
       delta_qty = Decimal.from_float(-1.0)
 
       assert {:ok, %Holding{}} =
-               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty)
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, delta_qty, "brokerage")
 
       assert BelayBrokerage.get_holdings(@default_tenant, investor_id) == []
     end
@@ -104,7 +105,7 @@ defmodule BelayBrokerageTest do
       qty = Decimal.from_float(1.0)
 
       # When qty is positive
-      assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, qty)
+      assert {:ok, %Holding{}} = BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, qty, "brokerage")
 
       # type is buy
       assert_receive {:handle_message,
@@ -119,7 +120,7 @@ defmodule BelayBrokerageTest do
 
       # When qty is negative
       assert {:ok, %Holding{}} =
-               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, Decimal.negate(qty))
+               BelayBrokerage.holding_transaction(@default_tenant, investor_id, sym, Decimal.negate(qty), "brokerage")
 
       # type is sell
       assert_receive {:handle_message,
@@ -137,7 +138,7 @@ defmodule BelayBrokerageTest do
       start_supervised!({TestTransactionHandler, self()})
 
       assert {:error, %Ecto.Changeset{errors: [qty: {"is invalid", _}]}} =
-               BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal")
+               BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
 
       refute_receive {:handle_message, _}
     end
