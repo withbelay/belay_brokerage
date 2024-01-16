@@ -5,6 +5,7 @@ defmodule BelayBrokerage.Holding do
     field(:investor_id, :string, primary_key: true)
     field(:sym, :string, primary_key: true)
     field(:qty, :decimal)
+    field(:brokerage, :string)
 
     timestamps()
   end
@@ -13,5 +14,5 @@ defmodule BelayBrokerage.Holding do
     change(holding, qty: new_qty)
   end
 
-  def_new(required: ~w(sym qty investor_id)a)
+  def_new(required: ~w(sym qty investor_id brokerage)a)
 end

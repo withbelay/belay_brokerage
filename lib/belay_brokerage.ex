@@ -39,11 +39,11 @@ defmodule BelayBrokerage do
     Repo.get(Investor, investor_id, prefix: partner_id)
   end
 
-  @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t()) ::
+  @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t(), String.t()) ::
           {:ok, Holding.t()} | {:error, Ecto.Changeset.t()}
-  def holding_transaction(partner_id, investor_id, sym, qty_delta) do
+  def holding_transaction(partner_id, investor_id, sym, qty_delta, brokerage) do
     Repo.transaction(fn ->
-      case insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta) do
+      case insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta, brokerage) do
         {:ok, holding} ->
           :ok = Transactions.publish_transaction(investor_id, sym, qty_delta)
           holding
@@ -91,11 +91,11 @@ defmodule BelayBrokerage do
     :ok
   end
 
-  defp insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta) do
+  defp insert_update_or_delete_holding(partner_id, investor_id, sym, qty_delta, brokerage) do
     case Repo.get_by(Holding, [investor_id: investor_id, sym: sym], prefix: partner_id) do
       nil ->
         %Holding{}
-        |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta})
+        |> Holding.changeset(%{investor_id: investor_id, sym: sym, qty: qty_delta, brokerage: brokerage})
         |> Repo.insert(prefix: partner_id)
 
       holding ->
