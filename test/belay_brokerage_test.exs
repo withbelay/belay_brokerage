@@ -8,7 +8,7 @@ defmodule BelayBrokerageTest do
 
   import BelayBrokerage.Factory
   import ExUnit.CaptureLog
-  
+
   test "all_investors/1" do
     investor = insert!(:investor)
 
@@ -159,10 +159,11 @@ defmodule BelayBrokerageTest do
     test "does not push a rabbit message when called unsuccessfully" do
       start_supervised!({TestTransactionHandler, self()})
 
-      log = capture_log(fn ->
-        assert {:error, %Ecto.Changeset{}} =
-                 BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
-      end)
+      log =
+        capture_log(fn ->
+          assert {:error, %Ecto.Changeset{}} =
+                   BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
+        end)
 
       refute_receive {:handle_message, _}
       assert log =~ "Unable to insert/update/delete holding:"
