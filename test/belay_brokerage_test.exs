@@ -7,6 +7,7 @@ defmodule BelayBrokerageTest do
   alias BelayBrokerage.TestTransactionHandler
 
   import BelayBrokerage.Factory
+  import ExUnit.CaptureLog
 
   test "all_investors/1" do
     investor = insert!(:investor)
@@ -14,11 +15,11 @@ defmodule BelayBrokerageTest do
     assert investor in BelayBrokerage.all_investors(@default_tenant)
   end
 
-  describe "create_investors/2" do
-    test "inserts investor" do
+  describe "upsert_investor/2" do
+    test "when investor has no access_token, it's still inserted (it's optional)" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.create_investor(@default_tenant, investor)
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
       assert investor.first_name == received_investor.first_name
       assert investor.address_1 == received_investor.address_1
@@ -29,12 +30,33 @@ defmodule BelayBrokerageTest do
       assert investor.postal_code == received_investor.postal_code
       assert investor.email == received_investor.email
       assert investor.phone == received_investor.phone
+      assert investor.access_token == nil
+    end
+
+    test "when field changes value, existing investor is updated" do
+      investor = build(:investor)
+
+      assert {:ok, %Investor{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+
+      investor = investor |> Map.put(:access_token, "access_token")
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+
+      assert investor.first_name == received_investor.first_name
+      assert investor.address_1 == received_investor.address_1
+      assert investor.last_name == received_investor.last_name
+      assert investor.address_2 == received_investor.address_2
+      assert investor.city == received_investor.city
+      assert investor.region == received_investor.region
+      assert investor.postal_code == received_investor.postal_code
+      assert investor.email == received_investor.email
+      assert investor.phone == received_investor.phone
+      assert investor.access_token == "access_token"
     end
 
     test "returns changeset on error" do
       investor = :investor |> build() |> Map.put(:first_name, 123)
 
-      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.create_investor(@default_tenant, investor)
+      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
     end
   end
 
@@ -137,10 +159,15 @@ defmodule BelayBrokerageTest do
     test "does not push a rabbit message when called unsuccessfully" do
       start_supervised!({TestTransactionHandler, self()})
 
-      assert {:error, %Ecto.Changeset{errors: [qty: {"is invalid", _}]}} =
-               BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
+      log =
+        capture_log(fn ->
+          assert {:error, %Ecto.Changeset{}} =
+                   BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
+        end)
 
       refute_receive {:handle_message, _}
+      assert log =~ "Unable to insert/update/delete holding:"
+      assert log =~ "errors: [qty: {\"is invalid\""
     end
   end
 end

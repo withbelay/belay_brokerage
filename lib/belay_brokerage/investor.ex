@@ -12,6 +12,7 @@ defmodule BelayBrokerage.Investor do
     field(:postal_code, :string)
     field(:email, :string)
     field(:phone, :string)
+    field(:access_token, :string)
 
     timestamps()
   end
