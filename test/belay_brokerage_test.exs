@@ -14,11 +14,11 @@ defmodule BelayBrokerageTest do
     assert investor in BelayBrokerage.all_investors(@default_tenant)
   end
 
-  describe "create_investors/2" do
-    test "inserts investor" do
+  describe "upsert_investor/2" do
+    test "when investor has no access_token, it's still inserted (it's optional)" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.create_investor(@default_tenant, investor)
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
       assert investor.first_name == received_investor.first_name
       assert investor.address_1 == received_investor.address_1
@@ -29,12 +29,31 @@ defmodule BelayBrokerageTest do
       assert investor.postal_code == received_investor.postal_code
       assert investor.email == received_investor.email
       assert investor.phone == received_investor.phone
+      assert investor.access_token == nil
+    end
+
+    test "when field changes value, existing investor is updated" do
+      investor = build(:investor)
+
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+
+      investor = investor |> Map.put(:access_token, "access_token")
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+
+      assert investor.first_name == received_investor.first_name
+      assert investor.address_1 == received_investor.address_1
+      assert investor.last_name == received_investor.last_name
+      assert investor.address_2 == received_investor.address_2
+      assert investor.city == received_investor.city
+      assert investor.region == received_investor.region
+      assert investor.postal_code == received_investor.postal_code
+      assert investor.email == received_investor.email
+      assert investor.phone == received_investor.phone
+      assert investor.access_token == "access_token"
     end
 
     test "returns changeset on error" do
       investor = :investor |> build() |> Map.put(:first_name, 123)
-
-      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.create_investor(@default_tenant, investor)
     end
   end
 

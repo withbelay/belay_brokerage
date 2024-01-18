@@ -9,6 +9,8 @@ defmodule BelayBrokerage do
 
   import Ecto.Query
 
+  require Logger
+
   @type investor :: %{
           required(:first_name) => String.t(),
           required(:last_name) => String.t(),
@@ -26,11 +28,10 @@ defmodule BelayBrokerage do
     Repo.all(Investor, prefix: partner_id)
   end
 
-  @spec create_investor(String.t(), investor()) ::
-          {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
-  def create_investor(partner_id, attrs) do
-    with {:ok, investor} <- Investor.new(attrs) do
-      Repo.insert(investor, prefix: partner_id)
+  @spec upsert_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  def upsert_investor(partner_id, investor_attrs) do
+    with {:ok, investor} <- Investor.new(investor_attrs) do
+      Repo.insert(investor, prefix: partner_id, on_conflict: {:replace_all_except, [:id]}, conflict_target: [:id])
     end
   end
 
@@ -49,6 +50,7 @@ defmodule BelayBrokerage do
           holding
 
         {:error, reason} ->
+          Logger.error("Unable to insert/update/delete holding: #{inspect(reason)}", reason: reason)
           Repo.rollback(reason)
       end
     end)
