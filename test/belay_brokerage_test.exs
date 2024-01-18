@@ -7,7 +7,8 @@ defmodule BelayBrokerageTest do
   alias BelayBrokerage.TestTransactionHandler
 
   import BelayBrokerage.Factory
-
+  import ExUnit.CaptureLog
+  
   test "all_investors/1" do
     investor = insert!(:investor)
 
@@ -35,7 +36,7 @@ defmodule BelayBrokerageTest do
     test "when field changes value, existing investor is updated" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert {:ok, %Investor{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
       investor = investor |> Map.put(:access_token, "access_token")
       assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
@@ -54,6 +55,8 @@ defmodule BelayBrokerageTest do
 
     test "returns changeset on error" do
       investor = :investor |> build() |> Map.put(:first_name, 123)
+
+      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
     end
   end
 
@@ -156,10 +159,14 @@ defmodule BelayBrokerageTest do
     test "does not push a rabbit message when called unsuccessfully" do
       start_supervised!({TestTransactionHandler, self()})
 
-      assert {:error, %Ecto.Changeset{errors: [qty: {"is invalid", _}]}} =
-               BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
+      log = capture_log(fn ->
+        assert {:error, %Ecto.Changeset{}} =
+                 BelayBrokerage.holding_transaction(@default_tenant, "id", "AAPL", "not a decimal", "brokerage")
+      end)
 
       refute_receive {:handle_message, _}
+      assert log =~ "Unable to insert/update/delete holding:"
+      assert log =~ "errors: [qty: {\"is invalid\""
     end
   end
 end
