@@ -13,6 +13,7 @@ defmodule BelayBrokerage.Investor do
     field(:email, :string)
     field(:phone, :string)
     field(:access_token, :string)
+    field(:account_id, :string)
 
     timestamps()
   end

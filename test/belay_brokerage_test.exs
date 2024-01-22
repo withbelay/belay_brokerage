@@ -38,7 +38,7 @@ defmodule BelayBrokerageTest do
 
       assert {:ok, %Investor{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
-      investor = investor |> Map.put(:access_token, "access_token")
+      investor = investor |> Map.merge(%{access_token: "access_token", account_id: "account_id"})
       assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
       assert investor.first_name == received_investor.first_name
@@ -51,6 +51,7 @@ defmodule BelayBrokerageTest do
       assert investor.email == received_investor.email
       assert investor.phone == received_investor.phone
       assert investor.access_token == "access_token"
+      assert investor.account_id == "account_id"
     end
 
     test "returns changeset on error" do
