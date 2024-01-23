@@ -47,14 +47,14 @@ defmodule BelayBrokerage.Transactions do
   end
 
   @spec publish_transaction(String.t(), String.t(), Decimal.t()) :: :ok | {:error, any()}
-  def publish_transaction(investor_id, sym, qty) do
-    transaction_type = if Decimal.gt?(qty, Decimal.new(0)), do: :buy, else: :sell
+  def publish_transaction(investor_id, sym, qty_delta) do
+    transaction_type = if Decimal.gt?(qty_delta, Decimal.new(0)), do: :buy, else: :sell
 
     Rabbit.Producer.publish(
       BelayBrokerage.Transactions.Producer,
       @belaybrokerage_exchange,
       @belaybrokerage_transactions_queue,
-      Message.new!(%{investor_id: investor_id, sym: sym, qty: qty, type: transaction_type}),
+      Message.new!(%{investor_id: investor_id, sym: sym, qty: Decimal.abs(qty_delta), type: transaction_type}),
       content_type: "application/json"
     )
   end
