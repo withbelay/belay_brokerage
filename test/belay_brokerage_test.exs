@@ -151,7 +151,7 @@ defmodule BelayBrokerageTest do
                         decoded_payload: %{
                           "investor_id" => ^investor_id,
                           "sym" => ^sym,
-                          "qty" => "-1.0",
+                          "qty" => "1.0",
                           "type" => "sell"
                         }
                       }}
