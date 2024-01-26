@@ -47,12 +47,12 @@ defmodule BelayBrokerage.Transactions do
   end
 
   @spec publish_transaction(String.t(), String.t(), Decimal.t()) :: :ok | {:error, any()}
-  def publish_transaction(investor_id, sym, qty_delta) do
+  def publish_transaction(investor_id, sym, delta_qty) do
     Rabbit.Producer.publish(
       BelayBrokerage.Transactions.Producer,
       @belaybrokerage_exchange,
       @belaybrokerage_transactions_queue,
-      Message.new!(%{investor_id: investor_id, sym: sym, qty: qty_delta}),
+      Message.new!(%{investor_id: investor_id, sym: sym, delta_qty: delta_qty}),
       content_type: "application/json"
     )
   end
