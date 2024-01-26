@@ -40,7 +40,6 @@ defmodule BelayBrokerage.Transactions do
       field(:investor_id, :string)
       field(:sym, :string)
       field(:delta_qty, :decimal)
-      field(:type, Ecto.Enum, values: [:buy, :sell])
     end
 
     def_new(required: :all)
