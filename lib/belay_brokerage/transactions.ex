@@ -39,7 +39,7 @@ defmodule BelayBrokerage.Transactions do
     typed_embedded_schema do
       field(:investor_id, :string)
       field(:sym, :string)
-      field(:qty, :decimal)
+      field(:delta_qty, :decimal)
       field(:type, Ecto.Enum, values: [:buy, :sell])
     end
 
