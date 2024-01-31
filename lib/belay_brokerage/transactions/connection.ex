@@ -8,10 +8,9 @@ defmodule BelayBrokerage.Transactions.Connection do
   @impl Rabbit.Connection
   def init(:connection_pool, opts), do: {:ok, opts}
 
-  def init(:connection, opts) do
+  def init(:connection, _opts) do
     # Perform runtime connection config
-    uri = Application.fetch_env!(:belay_brokerage, :rabbit_uri)
-    opts = Keyword.put(opts, :uri, uri)
+    opts = Application.fetch_env!(:belay_brokerage, :rabbit_connection_opts)
 
     {:ok, opts}
   end
