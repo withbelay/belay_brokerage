@@ -21,7 +21,10 @@ defmodule BelayBrokerage do
           required(:region) => String.t(),
           required(:postal_code) => String.t(),
           required(:email) => String.t(),
-          required(:phone) => String.t()
+          required(:phone) => String.t(),
+          required(:access_token) => String.t(),
+          required(:id) => String.t(),
+          required(:account_id) => String.t()
         }
 
   @spec all_investors(String.t()) :: [Investor.t()]
@@ -29,14 +32,14 @@ defmodule BelayBrokerage do
     Repo.all(Investor, prefix: partner_id)
   end
 
-  @spec upsert_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
-  def upsert_investor(partner_id, investor_attrs) do
+  @spec create_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  def create_investor(partner_id, investor_attrs) do
     with {:ok, investor} <- Investor.new(investor_attrs) do
-      Repo.insert(investor, prefix: partner_id, on_conflict: {:replace_all_except, [:id]}, conflict_target: [:id])
+      Repo.insert(investor, prefix: partner_id)
     end
   end
 
-  @spec update_investor(String.t(), String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  @spec update_investor(String.t(), String.t(), map()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
   def update_investor(partner_id, investor_id, investor_attrs) do
     with %Investor{} = investor <- get_investor(partner_id, investor_id) do
       investor
