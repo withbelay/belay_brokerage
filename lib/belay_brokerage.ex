@@ -29,10 +29,10 @@ defmodule BelayBrokerage do
     Repo.all(Investor, prefix: partner_id)
   end
 
-  @spec upsert_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
-  def upsert_investor(partner_id, investor_attrs) do
+  @spec create_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  def create_investor(partner_id, investor_attrs) do
     with {:ok, investor} <- Investor.new(investor_attrs) do
-      Repo.insert(investor, prefix: partner_id, on_conflict: {:replace_all_except, [:id]}, conflict_target: [:id])
+      Repo.insert(investor, prefix: partner_id)
     end
   end
 

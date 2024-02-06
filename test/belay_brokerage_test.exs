@@ -15,11 +15,11 @@ defmodule BelayBrokerageTest do
     assert investor in BelayBrokerage.all_investors(@default_tenant)
   end
 
-  describe "upsert_investor/2" do
+  describe "create_investor/2" do
     test "when investor has no access_token, it's still inserted (it's optional)" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.create_investor(@default_tenant, investor)
 
       assert investor.first_name == received_investor.first_name
       assert investor.address_1 == received_investor.address_1
@@ -36,7 +36,7 @@ defmodule BelayBrokerageTest do
     test "returns changeset on error" do
       investor = :investor |> build() |> Map.put(:first_name, 123)
 
-      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.create_investor(@default_tenant, investor)
     end
   end
 
@@ -44,7 +44,7 @@ defmodule BelayBrokerageTest do
     test "when field changes value, existing investor is updated" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{id: investor_id}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert {:ok, %Investor{id: investor_id}} = BelayBrokerage.create_investor(@default_tenant, investor)
 
       updated_investor_attrs = %{city: "new_city", region: "new_region"}
 
