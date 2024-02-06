@@ -33,31 +33,33 @@ defmodule BelayBrokerageTest do
       assert investor.access_token == nil
     end
 
+    test "returns changeset on error" do
+      investor = :investor |> build() |> Map.put(:first_name, 123)
+
+      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+    end
+  end
+
+  describe "update_investor/3" do
     test "when field changes value, existing investor is updated" do
       investor = build(:investor)
 
       assert {:ok, %Investor{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
-      investor = investor |> Map.merge(%{access_token: "access_token", account_id: "account_id"})
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      updated_investor = Map.merge(investor, %{access_token: "access_token", account_id: "account_id"})
+      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, updated_investor)
 
-      assert investor.first_name == received_investor.first_name
-      assert investor.address_1 == received_investor.address_1
-      assert investor.last_name == received_investor.last_name
-      assert investor.address_2 == received_investor.address_2
-      assert investor.city == received_investor.city
-      assert investor.region == received_investor.region
-      assert investor.postal_code == received_investor.postal_code
-      assert investor.email == received_investor.email
-      assert investor.phone == received_investor.phone
-      assert investor.access_token == "access_token"
-      assert investor.account_id == "account_id"
-    end
-
-    test "returns changeset on error" do
-      investor = :investor |> build() |> Map.put(:first_name, 123)
-
-      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert updated_investor.first_name == received_investor.first_name
+      assert updated_investor.address_1 == received_investor.address_1
+      assert updated_investor.last_name == received_investor.last_name
+      assert updated_investor.address_2 == received_investor.address_2
+      assert updated_investor.city == received_investor.city
+      assert updated_investor.region == received_investor.region
+      assert updated_investor.postal_code == received_investor.postal_code
+      assert updated_investor.email == received_investor.email
+      assert updated_investor.phone == received_investor.phone
+      assert updated_investor.access_token == "access_token"
+      assert updated_investor.account_id == "account_id"
     end
   end
 
