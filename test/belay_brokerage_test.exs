@@ -44,22 +44,24 @@ defmodule BelayBrokerageTest do
     test "when field changes value, existing investor is updated" do
       investor = build(:investor)
 
-      assert {:ok, %Investor{}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
+      assert {:ok, %Investor{id: investor_id}} = BelayBrokerage.upsert_investor(@default_tenant, investor)
 
-      updated_investor = Map.merge(investor, %{access_token: "access_token", account_id: "account_id"})
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.upsert_investor(@default_tenant, updated_investor)
+      updated_investor_attrs = %{city: "new_city", region: "new_region"}
 
-      assert updated_investor.first_name == received_investor.first_name
-      assert updated_investor.address_1 == received_investor.address_1
-      assert updated_investor.last_name == received_investor.last_name
-      assert updated_investor.address_2 == received_investor.address_2
-      assert updated_investor.city == received_investor.city
-      assert updated_investor.region == received_investor.region
-      assert updated_investor.postal_code == received_investor.postal_code
-      assert updated_investor.email == received_investor.email
-      assert updated_investor.phone == received_investor.phone
-      assert updated_investor.access_token == "access_token"
-      assert updated_investor.account_id == "account_id"
+      assert {:ok, %Investor{} = received_investor} =
+               BelayBrokerage.update_investor(@default_tenant, investor_id, updated_investor_attrs)
+
+      assert received_investor.first_name == investor.first_name
+      assert received_investor.address_1 == investor.address_1
+      assert received_investor.last_name == investor.last_name
+      assert received_investor.address_2 == investor.address_2
+      assert received_investor.city == "new_city"
+      assert received_investor.region == "new_region"
+      assert received_investor.postal_code == investor.postal_code
+      assert received_investor.email == investor.email
+      assert received_investor.phone == investor.phone
+      assert received_investor.access_token == investor.access_token
+      assert received_investor.account_id == investor.account_id
     end
   end
 
