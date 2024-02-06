@@ -19,7 +19,7 @@ defmodule BelayBrokerage.Investor do
   end
 
   def_new(
-    required: ~w(first_name last_name address_1 city region postal_code email phone)a,
+    required: ~w(first_name last_name address_1 city region postal_code email phone access_token account_id item_id)a,
     default: [id: {Ecto.UUID, :generate, []}]
   )
 end
