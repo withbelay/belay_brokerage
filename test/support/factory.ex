@@ -18,7 +18,8 @@ defmodule BelayBrokerage.Factory do
       email: "johndoe@email.com",
       phone: "123-123-1234",
       access_token: "access_token",
-      account_id: "account_id"
+      account_id: "account_id",
+      item_id: "item_id"
     }
   end
 

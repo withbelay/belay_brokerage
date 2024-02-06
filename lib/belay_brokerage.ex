@@ -13,6 +13,7 @@ defmodule BelayBrokerage do
   require Logger
 
   @type investor :: %{
+          required(:id) => String.t(),
           required(:first_name) => String.t(),
           required(:last_name) => String.t(),
           required(:address_1) => String.t(),
@@ -23,8 +24,8 @@ defmodule BelayBrokerage do
           required(:email) => String.t(),
           required(:phone) => String.t(),
           required(:access_token) => String.t(),
-          required(:id) => String.t(),
-          required(:account_id) => String.t()
+          required(:account_id) => String.t(),
+          required(:item_id) => String.t()
         }
 
   @spec all_investors(String.t()) :: [Investor.t()]
@@ -51,6 +52,13 @@ defmodule BelayBrokerage do
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
   def get_investor(partner_id, investor_id) do
     Repo.get(Investor, investor_id, prefix: partner_id)
+  end
+
+  @spec get_investor_by_item_id(String.t(), String.t()) :: Investor.t() | nil
+  def get_investor_by_item_id(partner_id, item_id) do
+    query = from(i in Investor, where: i.item_id == ^item_id)
+
+    Repo.one(query, prefix: partner_id)
   end
 
   @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t(), String.t()) ::

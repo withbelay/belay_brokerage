@@ -79,6 +79,18 @@ defmodule BelayBrokerageTest do
     end
   end
 
+  describe "get_investor_by_item_id/2" do
+    test "retrieves inserted investor" do
+      investor = insert!(:investor)
+
+      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, investor.item_id) == investor
+    end
+
+    test "returns nil when no investor exists" do
+      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, "some item_id") == nil
+    end
+  end
+
   describe "get_holdings/2" do
     test "retrieves all holdings" do
       investor_id = "investor_id"
