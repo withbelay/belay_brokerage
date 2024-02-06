@@ -8,6 +8,7 @@ defmodule BelayBrokerage do
   alias BelayBrokerage.Repo
 
   import Ecto.Query
+  import Ecto.Changeset
 
   require Logger
 
@@ -32,6 +33,15 @@ defmodule BelayBrokerage do
   def upsert_investor(partner_id, investor_attrs) do
     with {:ok, investor} <- Investor.new(investor_attrs) do
       Repo.insert(investor, prefix: partner_id, on_conflict: {:replace_all_except, [:id]}, conflict_target: [:id])
+    end
+  end
+
+  @spec update_investor(String.t(), String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  def update_investor(partner_id, investor_id, investor_attrs) do
+    with %Investor{} = investor <- get_investor(partner_id, investor_id) do
+      investor
+      |> change(investor_attrs)
+      |> Repo.update()
     end
   end
 
