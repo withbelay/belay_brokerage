@@ -15,12 +15,14 @@ defmodule BelayBrokerage.Investor do
     field(:access_token, :string)
     field(:account_id, :string)
     field(:item_id, :string)
+    field(:dwolla_customer_id, :string)
 
     timestamps()
   end
 
   def_new(
-    required: ~w(first_name last_name address_1 city region postal_code email phone access_token account_id item_id)a,
+    required:
+      ~w(first_name last_name address_1 city region postal_code email phone access_token account_id item_id dwolla_customer_id)a,
     default: [id: {Ecto.UUID, :generate, []}]
   )
 end
