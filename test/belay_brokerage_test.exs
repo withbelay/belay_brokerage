@@ -16,7 +16,7 @@ defmodule BelayBrokerageTest do
   end
 
   describe "create_investor/2" do
-    test "when investor has no access_token, it's still inserted (it's optional)" do
+    test "when investor has all data, it's inserted" do
       investor = build(:investor)
 
       assert {:ok, %Investor{} = received_investor} = BelayBrokerage.create_investor(@default_tenant, investor)
@@ -30,7 +30,9 @@ defmodule BelayBrokerageTest do
       assert investor.postal_code == received_investor.postal_code
       assert investor.email == received_investor.email
       assert investor.phone == received_investor.phone
-      assert investor.access_token == nil
+      assert investor.access_token == received_investor.access_token
+      assert investor.account_id == received_investor.account_id
+      assert investor.item_id == received_investor.item_id
     end
 
     test "returns changeset on error" do
@@ -74,6 +76,18 @@ defmodule BelayBrokerageTest do
 
     test "returns nil when no investor exists" do
       assert BelayBrokerage.get_investor(@default_tenant, "some id") == nil
+    end
+  end
+
+  describe "get_investor_by_item_id/2" do
+    test "retrieves inserted investor" do
+      investor = insert!(:investor)
+
+      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, investor.item_id) == investor
+    end
+
+    test "returns nil when no investor exists" do
+      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, "some item_id") == nil
     end
   end
 

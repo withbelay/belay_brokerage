@@ -16,7 +16,10 @@ defmodule BelayBrokerage.Factory do
       region: "PA",
       postal_code: "19103",
       email: "johndoe@email.com",
-      phone: "123-123-1234"
+      phone: "123-123-1234",
+      access_token: "access_token",
+      account_id: "account_id",
+      item_id: "item_id"
     }
   end
 
