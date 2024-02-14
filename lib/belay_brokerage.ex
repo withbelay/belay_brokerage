@@ -25,6 +25,7 @@ defmodule BelayBrokerage do
           required(:phone) => String.t(),
           required(:access_token) => String.t(),
           required(:account_id) => String.t(),
+          required(:auth0_ids) => [String.t()],
           required(:item_id) => String.t(),
           required(:dwolla_customer_id) => String.t()
         }

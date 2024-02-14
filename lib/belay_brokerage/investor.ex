@@ -14,6 +14,7 @@ defmodule BelayBrokerage.Investor do
     field(:phone, :string)
     field(:access_token, :string)
     field(:account_id, :string)
+    field(:auth0_ids, {:array, :string})
     field(:item_id, :string)
     field(:dwolla_customer_id, :string)
 
