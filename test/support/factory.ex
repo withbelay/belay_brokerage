@@ -20,7 +20,8 @@ defmodule BelayBrokerage.Factory do
       access_token: "access_token",
       account_id: "account_id",
       item_id: "item_id",
-      dwolla_customer_id: "dwolla_customer_id"
+      dwolla_customer_id: "dwolla_customer_id",
+      auth0_ids: ["auth0_id"]
     }
   end
 
