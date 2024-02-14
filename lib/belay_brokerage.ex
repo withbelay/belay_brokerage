@@ -2,18 +2,17 @@ defmodule BelayBrokerage do
   @moduledoc """
   BelayBrokerage provides an interface against the BelayBrokerage defined DB
   """
+  alias BelayBrokerage.AuthAccount
   alias BelayBrokerage.Transactions
   alias BelayBrokerage.Investor
   alias BelayBrokerage.Holding
   alias BelayBrokerage.Repo
 
   import Ecto.Query
-  import Ecto.Changeset
 
   require Logger
 
   @type investor :: %{
-          required(:id) => String.t(),
           required(:first_name) => String.t(),
           required(:last_name) => String.t(),
           required(:address_1) => String.t(),
@@ -21,45 +20,79 @@ defmodule BelayBrokerage do
           required(:city) => String.t(),
           required(:region) => String.t(),
           required(:postal_code) => String.t(),
-          required(:email) => String.t(),
           required(:phone) => String.t(),
-          required(:access_token) => String.t(),
-          required(:account_id) => String.t(),
-          required(:item_id) => String.t(),
-          required(:dwolla_customer_id) => String.t()
+          required(:plaid_access_token) => String.t(),
+          optional(:plaid_account_id) => String.t(),
+          optional(:plaid_item_id) => String.t(),
+          optional(:dwolla_customer_id) => String.t(),
+          optional(:auth_accounts) => [AuthAccount.t()]
         }
 
   @spec all_investors(String.t()) :: [Investor.t()]
   def all_investors(partner_id) do
-    Repo.all(Investor, prefix: partner_id)
-  end
-
-  @spec create_investor(String.t(), investor()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
-  def create_investor(partner_id, investor_attrs) do
-    with {:ok, investor} <- Investor.new(investor_attrs) do
-      Repo.insert(investor, prefix: partner_id)
+    with [%Investor{} | _] = investors <- Repo.all(Investor, prefix: partner_id) do
+      investors
+      |> Repo.preload(:auth_accounts)
+      |> Enum.map(fn %Investor{auth_accounts: auth_accounts} = investor ->
+        %{email: primary_email} = Enum.find(auth_accounts, & &1.is_primary)
+        Map.put(investor, :primary_email, primary_email)
+      end)
     end
   end
 
-  @spec update_investor(String.t(), String.t(), map()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
-  def update_investor(partner_id, investor_id, investor_attrs) do
-    with %Investor{} = investor <- get_investor(partner_id, investor_id) do
-      investor
-      |> change(investor_attrs)
-      |> Repo.update()
+  @spec create_investor(String.t(), String.t(), String.t()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
+  def create_investor(partner_id, uid, email) do
+    %Investor{}
+    |> Investor.create_changeset(%{auth_accounts: [%{uid: uid, email: email, is_primary: true}]})
+    |> Repo.insert(prefix: partner_id)
+  end
+
+  @spec update_investor(String.t(), String.t(), investor()) ::
+          {:ok, Investor.t()} | {:error, :investor_not_found | Ecto.Changeset.t()}
+  def update_investor(partner_id, investor_id, params) do
+    case get_investor(partner_id, investor_id) do
+      %Investor{} = investor ->
+        investor
+        |> Investor.linked_changeset(params)
+        |> Repo.update()
+
+      nil ->
+        {:error, :investor_not_found}
     end
   end
 
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
   def get_investor(partner_id, investor_id) do
-    Repo.get(Investor, investor_id, prefix: partner_id)
+    with %Investor{} = investor <- Repo.get(Investor, investor_id, prefix: partner_id) do
+      %{email: primary_email} = fetch_primary_account(investor)
+
+      Map.put(investor, :primary_email, primary_email)
+    end
   end
 
-  @spec get_investor_by_item_id(String.t(), String.t()) :: Investor.t() | nil
-  def get_investor_by_item_id(partner_id, item_id) do
-    query = from(i in Investor, where: i.item_id == ^item_id)
+  @spec get_investor_by_email(String.t(), String.t()) :: Investor.t() | nil
+  def get_investor_by_email(partner_id, email) do
+    query = from(a in AuthAccount, prefix: ^partner_id, where: a.email == ^email)
 
-    Repo.one(query, prefix: partner_id)
+    case Repo.all(query) do
+      [] ->
+        nil
+
+      auth_accounts ->
+        auth_account = Enum.find(auth_accounts, & &1.is_primary)
+        get_investor(partner_id, auth_account.investor_id)
+    end
+  end
+
+  @spec get_investor_by_plaid_item_id(String.t(), String.t()) :: Investor.t() | nil
+  def get_investor_by_plaid_item_id(partner_id, plaid_item_id) do
+    query = from(i in Investor, where: i.plaid_item_id == ^plaid_item_id)
+
+    with %Investor{} = investor <- Repo.one(query, prefix: partner_id) do
+      %{email: primary_email} = fetch_primary_account(investor)
+
+      Map.put(investor, :primary_email, primary_email)
+    end
   end
 
   @spec holding_transaction(String.t(), String.t(), String.t(), Decimal.t(), String.t()) ::
@@ -131,5 +164,10 @@ defmodule BelayBrokerage do
           Repo.delete(holding, prefix: partner_id)
         end
     end
+  end
+
+  defp fetch_primary_account(%Investor{} = investor) do
+    %Investor{auth_accounts: auth_accounts} = Repo.preload(investor, :auth_accounts)
+    Enum.find(auth_accounts, & &1.is_primary)
   end
 end
