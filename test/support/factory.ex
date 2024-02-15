@@ -2,6 +2,7 @@ defmodule BelayBrokerage.Factory do
   alias BelayBrokerage.Repo
   alias BelayBrokerage.Holding
   alias BelayBrokerage.Investor
+  alias BelayBrokerage.Auth0Id
 
   @default_tenant Application.compile_env!(:belay_brokerage, :tenants) |> List.first()
 
@@ -21,7 +22,14 @@ defmodule BelayBrokerage.Factory do
       account_id: "account_id",
       item_id: "item_id",
       dwolla_customer_id: "dwolla_customer_id",
-      auth0_ids: ["auth0_id"]
+      auth0_ids: [%{uid: "auth0_uid", investor_id: "id"}]
+    }
+  end
+
+  def build(:auth0_ids) do
+    %Auth0Id{
+      uid: "uid",
+      investor_id: "id"
     }
   end
 
