@@ -54,9 +54,9 @@ defmodule BelayBrokerage do
 
   @spec upsert_auth0_id(String.t(), String.t(), String.t()) :: {:ok, Auth0Id.t()} | {:error, Ecto.Changeset.t()}
   def upsert_auth0_id(partner_id, investor_id, uid) do
-    %Auth0Id{}
-    |> Auth0Id.new!(%{investor_id: investor_id, uid: uid})
-    |> Repo.insert(prefix: partner_id, conflict_target: [:uid], on_conflict: :nothing)
+    with {:ok, auth0_id} <- Auth0Id.new(%Auth0Id{}, %{investor_id: investor_id, uid: uid}) do
+      Repo.insert(auth0_id, prefix: partner_id, conflict_target: [:uid], on_conflict: :nothing)
+    end
   end
 
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
