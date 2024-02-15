@@ -11,7 +11,7 @@ defmodule BelayBrokerage.Repo.Migrations.PreferEmailOverAuth0Uid do
     flush()
 
     # Move existing id to auth0_ids table, replace id column in investors table with the email
-    investors = repo().all(from i in "investors", select: %{id: i.id, email: i.email}, prefix: prefix())
+    investors = repo().all(from i in "investors", prefix: ^prefix(), select: %{id: i.id, email: i.email})
 
     repo().query!("UPDATE #{prefix()}.investors SET id = email;")
 
@@ -24,9 +24,9 @@ defmodule BelayBrokerage.Repo.Migrations.PreferEmailOverAuth0Uid do
     # Move first existing auth0_id uid back to id column in investors
     query = from i in "investors", select: i.id
 
-    for investor_id <- repo().all(query, prefix: prefix()) |> IO.inspect() do
+    for investor_id <- repo().all(query, prefix: prefix()) do
       query = from a in "auth0_ids", where: a.investor_id == ^investor_id, select: a.uid
-      [uid | _] = repo().all(query, prefix: prefix()) |> IO.inspect()
+      [uid | _] = repo().all(query, prefix: prefix())
 
       repo().query!("DELETE FROM #{prefix()}.auth0_ids WHERE investor_id = '#{investor_id}';")
       repo().query!("UPDATE #{prefix()}.investors SET id = '#{uid}' WHERE id = '#{investor_id}';")
