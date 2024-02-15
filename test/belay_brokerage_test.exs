@@ -1,8 +1,10 @@
 defmodule BelayBrokerageTest do
   use BelayBrokerage.DataCase
 
+  alias BelayBrokerage.Auth0Id
   alias BelayBrokerage.Investor
   alias BelayBrokerage.Holding
+  alias BelayBrokerage.Repo
 
   alias BelayBrokerage.TestTransactionHandler
 
@@ -12,7 +14,10 @@ defmodule BelayBrokerageTest do
   test "all_investors/1" do
     investor = insert!(:investor)
 
-    assert investor in BelayBrokerage.all_investors(@default_tenant)
+    investors_with_auth0_ids =
+      @default_tenant |> BelayBrokerage.all_investors() |> Repo.preload([:auth0_ids])
+
+    assert investor in investors_with_auth0_ids
   end
 
   describe "create_investor/2" do
@@ -67,11 +72,28 @@ defmodule BelayBrokerageTest do
     end
   end
 
+  describe "upsert_auth0_id/3" do
+    test "if Auth0Id exists, does nothing" do
+      %{id: investor_id, auth0_ids: [%{uid: auth0_uid} = auth0_id | _]} = insert!(:investor)
+
+      assert {:ok, ^auth0_id} = BelayBrokerage.upsert_auth0_id(@default_tenant, investor_id, auth0_uid)
+      assert Auth0Id |> Repo.all(prefix: @default_tenant) |> length() == 1
+    end
+
+    test "if Auth0Id does not exist, add it" do
+      uid = "some uid"
+      investor = insert!(:investor)
+      assert {:ok, %{uid: ^uid}} = BelayBrokerage.upsert_auth0_id(@default_tenant, investor.id, uid)
+
+      assert Auth0Id |> Repo.all(prefix: @default_tenant) |> length() == 2
+    end
+  end
+
   describe "get_investor/2" do
     test "retrieves inserted investor" do
       investor = insert!(:investor)
 
-      assert BelayBrokerage.get_investor(@default_tenant, investor.id) == investor
+      assert @default_tenant |> BelayBrokerage.get_investor(investor.id) |> Repo.preload([:auth0_ids]) == investor
     end
 
     test "returns nil when no investor exists" do
@@ -83,7 +105,8 @@ defmodule BelayBrokerageTest do
     test "retrieves inserted investor" do
       investor = insert!(:investor)
 
-      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, investor.item_id) == investor
+      assert @default_tenant |> BelayBrokerage.get_investor_by_item_id(investor.item_id) |> Repo.preload([:auth0_ids]) ==
+               investor
     end
 
     test "returns nil when no investor exists" do
