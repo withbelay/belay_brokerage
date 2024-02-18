@@ -2,13 +2,12 @@ defmodule BelayBrokerage.Factory do
   alias BelayBrokerage.Repo
   alias BelayBrokerage.Holding
   alias BelayBrokerage.Investor
-  alias BelayBrokerage.Auth0Id
+  alias BelayBrokerage.AuthAccount
 
   @default_tenant Application.compile_env!(:belay_brokerage, :tenants) |> List.first()
 
   def build(:investor) do
     %Investor{
-      id: "id",
       first_name: "John",
       last_name: "Doe",
       address_1: "2100 Market St",
@@ -16,20 +15,21 @@ defmodule BelayBrokerage.Factory do
       city: "Philadelphia",
       region: "PA",
       postal_code: "19103",
-      email: "johndoe@email.com",
       phone: "123-123-1234",
       access_token: "access_token",
       account_id: "account_id",
       item_id: "item_id",
       dwolla_customer_id: "dwolla_customer_id",
-      auth0_ids: [%{uid: "auth0_uid", investor_id: "id"}]
+      auth_accounts: [build(:auth_account)]
     }
   end
 
-  def build(:auth0_ids) do
-    %Auth0Id{
+  def build(:auth_account) do
+    %AuthAccount{
       uid: "uid",
-      investor_id: "id"
+      investor_id: "id",
+      email: "johndoe@email.com",
+      is_primary: true
     }
   end
 

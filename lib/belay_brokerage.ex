@@ -2,7 +2,7 @@ defmodule BelayBrokerage do
   @moduledoc """
   BelayBrokerage provides an interface against the BelayBrokerage defined DB
   """
-  alias BelayBrokerage.Auth0Id
+  alias BelayBrokerage.AuthAccount
   alias BelayBrokerage.Transactions
   alias BelayBrokerage.Investor
   alias BelayBrokerage.Holding
@@ -22,13 +22,12 @@ defmodule BelayBrokerage do
           required(:city) => String.t(),
           required(:region) => String.t(),
           required(:postal_code) => String.t(),
-          required(:email) => String.t(),
           required(:phone) => String.t(),
           required(:access_token) => String.t(),
-          required(:account_id) => String.t(),
-          required(:auth0_ids) => [String.t()],
-          required(:item_id) => String.t(),
-          required(:dwolla_customer_id) => String.t()
+          optional(:account_id) => String.t(),
+          optional(:auth_accounts) => [AuthAccount.t()],
+          optional(:item_id) => String.t(),
+          optional(:dwolla_customer_id) => String.t()
         }
 
   @spec all_investors(String.t()) :: [Investor.t()]
@@ -52,10 +51,21 @@ defmodule BelayBrokerage do
     end
   end
 
-  @spec upsert_auth0_id(String.t(), String.t(), String.t()) :: {:ok, Auth0Id.t()} | {:error, Ecto.Changeset.t()}
-  def upsert_auth0_id(partner_id, investor_id, uid) do
-    with {:ok, auth0_id} <- Auth0Id.new(%Auth0Id{}, %{investor_id: investor_id, uid: uid}) do
-      Repo.insert(auth0_id, prefix: partner_id, conflict_target: [:uid], on_conflict: :nothing)
+  @spec upsert_auth_account(String.t(), %{
+          uid: String.t(),
+          investor_id: String.t(),
+          email: String.t()
+        }) :: {:ok, AuthAccount.t()} | {:error, Ecto.Changeset.t()}
+  def upsert_auth_account(partner_id, params) do
+    is_primary =
+      not Repo.exists?(from(a in AuthAccount, where: a.investor_id == ^params.investor_id), prefix: partner_id)
+
+    with {:ok, auth_account} <- AuthAccount.new(%AuthAccount{}, Map.put(params, :is_primary, is_primary)) do
+      Repo.insert(auth_account,
+        prefix: partner_id,
+        conflict_target: [:investor_id, :email],
+        on_conflict: :nothing
+      )
     end
   end
 
