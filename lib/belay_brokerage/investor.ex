@@ -21,9 +21,10 @@ defmodule BelayBrokerage.Investor do
     timestamps()
   end
 
-  def changeset(params) do
-    %__MODULE__{}
-    |> cast(params, ~w(first_name last_name address_1 city region postal_code phone)a)
+  @spec create_changeset(__MODULE__.t(), map()) :: Ecto.Changeset.t()
+  def create_changeset(%__MODULE__{} = struct, params) do
+    struct
+    |> changeset(params)
     |> cast_assoc(:auth0_ids, with: &BelayBrokerage.AuthAccount.create_changeset/2)
   end
 
