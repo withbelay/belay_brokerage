@@ -14,7 +14,7 @@ defmodule BelayBrokerage.AuthAccount do
     )
   end
 
-  @callback create_changeset(__MODULE__.t(), map()) :: Ecto.Changeset.t()
+  @spec create_changeset(__MODULE__.t(), map()) :: Ecto.Changeset.t()
   def create_changeset(%__MODULE__{} = struct, params) do
     struct
     |> changeset(params)
