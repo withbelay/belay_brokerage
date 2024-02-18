@@ -26,7 +26,7 @@ defmodule BelayBrokerage.Factory do
 
   def build(:auth_account) do
     %AuthAccount{
-      uid: "uid",
+      uid: Ecto.UUID.generate(),
       investor_id: "id",
       email: "johndoe@email.com",
       is_primary: true

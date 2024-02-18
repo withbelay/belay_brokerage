@@ -1,7 +1,7 @@
 defmodule BelayBrokerage.Investor do
   use BelayBrokerage.SimpleTypedSchema
 
-  @primary_key {:id, :string, autogenerate: false}
+  @primary_key {:id, :string, autogenerate: {Ecto.UUID, :generate, []}}
   typed_schema "investors" do
     field(:first_name, :string)
     field(:last_name, :string)

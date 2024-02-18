@@ -60,13 +60,14 @@ defmodule BelayBrokerage do
     is_primary =
       not Repo.exists?(from(a in AuthAccount, where: a.investor_id == ^params.investor_id), prefix: partner_id)
 
-    with {:ok, auth_account} <- AuthAccount.new(%AuthAccount{}, Map.put(params, :is_primary, is_primary)) do
-      Repo.insert(auth_account,
-        prefix: partner_id,
-        conflict_target: [:investor_id, :email],
-        on_conflict: :nothing
-      )
-    end
+    params
+    |> Map.put(:is_primary, is_primary)
+    |> AuthAccount.create_changeset()
+    |> Repo.insert(
+      prefix: partner_id,
+      conflict_target: [:investor_id, :email],
+      on_conflict: :nothing
+    )
   end
 
   @spec get_investor(String.t(), String.t()) :: Investor.t() | nil
