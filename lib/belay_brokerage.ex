@@ -30,7 +30,14 @@ defmodule BelayBrokerage do
 
   @spec all_investors(String.t()) :: [Investor.t()]
   def all_investors(partner_id) do
-    Repo.all(Investor, prefix: partner_id)
+    with [%Investor{} | _] = investors <- Repo.all(Investor, prefix: partner_id) do
+      investors
+      |> Repo.preload(:auth_accounts)
+      |> Enum.map(fn %Investor{auth_accounts: auth_accounts} = investor ->
+        %{email: primary_email} = Enum.find(auth_accounts, & &1.is_primary)
+        Map.put(investor, :primary_email, primary_email)
+      end)
+    end
   end
 
   @spec create_investor(String.t(), String.t(), String.t()) :: {:ok, Investor.t()} | {:error, Ecto.Changeset.t()}
