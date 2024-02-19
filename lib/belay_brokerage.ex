@@ -40,9 +40,9 @@ defmodule BelayBrokerage do
     |> Repo.insert(prefix: partner_id)
   end
 
-  @spec link_investor(String.t(), String.t(), investor()) ::
+  @spec update_investor(String.t(), String.t(), investor()) ::
           {:ok, Investor.t()} | {:error, :investor_not_found | Ecto.Changeset.t()}
-  def link_investor(partner_id, investor_id, params) do
+  def update_investor(partner_id, investor_id, params) do
     case get_investor(partner_id, investor_id) do
       %Investor{} = investor ->
         investor

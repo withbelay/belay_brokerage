@@ -31,11 +31,13 @@ defmodule BelayBrokerage.Investor do
   end
 
   def linked_changeset(%__MODULE__{} = struct, params) do
-    struct
-    |> change(params)
-    |> validate_required(
+    fields =
       ~w(first_name last_name address_1 city region postal_code phone access_token account_id item_id dwolla_customer_id)a
-    )
+
+    struct
+    |> cast(params, fields)
+    |> validate_required(fields)
+    |> change(params)
   end
 
   def_new()

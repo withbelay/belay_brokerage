@@ -8,6 +8,7 @@ defmodule BelayBrokerage.Factory do
 
   def build(:investor) do
     %Investor{
+      id: "id",
       first_name: "John",
       last_name: "Doe",
       address_1: "2100 Market St",

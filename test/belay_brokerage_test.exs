@@ -20,37 +20,25 @@ defmodule BelayBrokerageTest do
     assert investor in investors_with_auth_accounts
   end
 
-  describe "create_investor/2" do
-    test "when investor has all data, it's inserted" do
-      investor = build(:investor)
+  describe "create_investor/3" do
+    test "when investor has uid and email, an Investor and an AuthAccount is inserted" do
+      %{uid: uid, email: email} = build(:auth_account)
 
-      assert {:ok, %Investor{} = received_investor} = BelayBrokerage.create_investor(@default_tenant, investor)
+      assert {:ok, %Investor{id: investor_id, auth_accounts: [auth_account]}} =
+               BelayBrokerage.create_investor(@default_tenant, uid, email)
 
-      assert investor.first_name == received_investor.first_name
-      assert investor.address_1 == received_investor.address_1
-      assert investor.last_name == received_investor.last_name
-      assert investor.address_2 == received_investor.address_2
-      assert investor.city == received_investor.city
-      assert investor.region == received_investor.region
-      assert investor.postal_code == received_investor.postal_code
-      assert investor.phone == received_investor.phone
-      assert investor.access_token == received_investor.access_token
-      assert investor.account_id == received_investor.account_id
-      assert investor.item_id == received_investor.item_id
+      assert %AuthAccount{investor_id: ^investor_id, uid: ^uid, email: ^email, is_primary: true} = auth_account
     end
 
     test "returns changeset on error" do
-      investor = :investor |> build() |> Map.put(:first_name, 123)
-
-      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.create_investor(@default_tenant, investor)
+      invalid_email = 123
+      assert {:error, %Ecto.Changeset{}} = BelayBrokerage.create_investor(@default_tenant, "valid uid", invalid_email)
     end
   end
 
   describe "update_investor/3" do
     test "when field changes value, existing investor is updated" do
-      investor = build(:investor)
-
-      assert {:ok, %Investor{id: investor_id}} = BelayBrokerage.create_investor(@default_tenant, investor)
+      %{id: investor_id} = investor = insert!(:investor)
 
       updated_investor_attrs = %{city: "new_city", region: "new_region"}
 
@@ -68,49 +56,29 @@ defmodule BelayBrokerageTest do
       assert received_investor.access_token == investor.access_token
       assert received_investor.account_id == investor.account_id
     end
-  end
 
-  describe "upsert_auth_account/3" do
-    setup do
-      %{investor: insert!(:investor, %{auth_accounts: []})}
+    test "when fields changes to an invalid value, returns {:error, Ecto.Changeset}" do
+      %{id: investor_id} = insert!(:investor)
+      invalid_first_name = 123
+
+      assert {:error, %Ecto.Changeset{}} =
+               BelayBrokerage.update_investor(@default_tenant, investor_id, %{first_name: invalid_first_name})
     end
 
-    test "if AuthAccount with same email and investor_id exists, does nothing", %{investor: %{id: investor_id}} do
-      %{uid: uid, email: email} = insert!(:auth_account, %{investor_id: investor_id})
-      params = %{uid: Ecto.UUID.generate(), investor_id: investor_id, email: email}
-
-      assert {:ok, _} = BelayBrokerage.upsert_auth_account(@default_tenant, params)
-      assert [%AuthAccount{uid: ^uid}] = Repo.all(AuthAccount, prefix: @default_tenant)
-    end
-
-    test "if AuthAccount does not exist, add it and set is_primary to true", %{investor: %{id: investor_id}} do
-      uid = Ecto.UUID.generate()
-      params = %{uid: uid, investor_id: investor_id, email: "some_email@test.com"}
-
-      assert {:ok, %{uid: ^uid, is_primary: true}} =
-               BelayBrokerage.upsert_auth_account(@default_tenant, params)
-    end
-
-    test "if AuthAccount exists but with different email, add it and set is_primary to false", %{
-      investor: %{id: investor_id}
-    } do
-      insert!(:auth_account, %{investor_id: investor_id})
-
-      uid = Ecto.UUID.generate()
-      params = %{uid: uid, investor_id: investor_id, email: "some_email@test.com"}
-
-      assert {:ok, %{uid: ^uid, is_primary: false}} =
-               BelayBrokerage.upsert_auth_account(@default_tenant, params)
-
-      assert AuthAccount |> Repo.all(prefix: @default_tenant) |> length() == 2
+    test "when investor doesn't exist, returns {:error, :investor_not_found}" do
+      assert {:error, :investor_not_found} =
+               BelayBrokerage.update_investor(@default_tenant, "some investor_id", %{})
     end
   end
 
   describe "get_investor/2" do
     test "retrieves inserted investor" do
-      investor = insert!(:investor)
+      %{auth_accounts: [%{email: primary_email}]} = investor = insert!(:investor)
 
-      assert @default_tenant |> BelayBrokerage.get_investor(investor.id) |> Repo.preload([:auth_accounts]) == investor
+      expected_investor = %{investor | primary_email: primary_email}
+
+      assert @default_tenant |> BelayBrokerage.get_investor(investor.id) |> Repo.preload([:auth_accounts]) ==
+               expected_investor
     end
 
     test "returns nil when no investor exists" do
@@ -120,12 +88,14 @@ defmodule BelayBrokerageTest do
 
   describe "get_investor_by_item_id/2" do
     test "retrieves inserted investor" do
-      investor = insert!(:investor)
+      %{auth_accounts: [%{email: primary_email}]} = investor = insert!(:investor)
+
+      expected_investor = %{investor | primary_email: primary_email}
 
       assert @default_tenant
              |> BelayBrokerage.get_investor_by_item_id(investor.item_id)
              |> Repo.preload([:auth_accounts]) ==
-               investor
+               expected_investor
     end
 
     test "returns nil when no investor exists" do
