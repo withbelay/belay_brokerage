@@ -21,11 +21,11 @@ defmodule BelayBrokerage do
           required(:region) => String.t(),
           required(:postal_code) => String.t(),
           required(:phone) => String.t(),
-          required(:access_token) => String.t(),
-          optional(:account_id) => String.t(),
-          optional(:auth_accounts) => [AuthAccount.t()],
-          optional(:item_id) => String.t(),
-          optional(:dwolla_customer_id) => String.t()
+          required(:plaid_access_token) => String.t(),
+          optional(:plaid_account_id) => String.t(),
+          optional(:plaid_item_id) => String.t(),
+          optional(:dwolla_customer_id) => String.t(),
+          optional(:auth_accounts) => [AuthAccount.t()]
         }
 
   @spec all_investors(String.t()) :: [Investor.t()]
@@ -84,9 +84,9 @@ defmodule BelayBrokerage do
     end
   end
 
-  @spec get_investor_by_item_id(String.t(), String.t()) :: Investor.t() | nil
-  def get_investor_by_item_id(partner_id, item_id) do
-    query = from(i in Investor, where: i.item_id == ^item_id)
+  @spec get_investor_by_plaid_item_id(String.t(), String.t()) :: Investor.t() | nil
+  def get_investor_by_plaid_item_id(partner_id, plaid_item_id) do
+    query = from(i in Investor, where: i.plaid_item_id == ^plaid_item_id)
 
     with %Investor{} = investor <- Repo.one(query, prefix: partner_id) do
       %{email: primary_email} = fetch_primary_account(investor)

@@ -53,8 +53,9 @@ defmodule BelayBrokerageTest do
       assert received_investor.region == "new_region"
       assert received_investor.postal_code == investor.postal_code
       assert received_investor.phone == investor.phone
-      assert received_investor.access_token == investor.access_token
-      assert received_investor.account_id == investor.account_id
+      assert received_investor.plaid_access_token == investor.plaid_access_token
+      assert received_investor.plaid_account_id == investor.plaid_account_id
+      assert received_investor.plaid_item_id == investor.plaid_item_id
     end
 
     test "when fields changes to an invalid value, returns {:error, Ecto.Changeset}" do
@@ -99,20 +100,20 @@ defmodule BelayBrokerageTest do
     end
   end
 
-  describe "get_investor_by_item_id/2" do
+  describe "get_investor_by_plaid_item_id/2" do
     test "retrieves inserted investor" do
       %{auth_accounts: [%{email: primary_email}]} = investor = insert!(:investor)
 
       expected_investor = %{investor | primary_email: primary_email}
 
       assert @default_tenant
-             |> BelayBrokerage.get_investor_by_item_id(investor.item_id)
+             |> BelayBrokerage.get_investor_by_plaid_item_id(investor.plaid_item_id)
              |> Repo.preload([:auth_accounts]) ==
                expected_investor
     end
 
     test "returns nil when no investor exists" do
-      assert BelayBrokerage.get_investor_by_item_id(@default_tenant, "some item_id") == nil
+      assert BelayBrokerage.get_investor_by_plaid_item_id(@default_tenant, "some plaid_item_id") == nil
     end
   end
 

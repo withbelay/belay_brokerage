@@ -11,9 +11,11 @@ defmodule BelayBrokerage.Investor do
     field(:region, :string)
     field(:postal_code, :string)
     field(:phone, :string)
-    field(:access_token, :string)
-    field(:account_id, :string)
-    field(:item_id, :string)
+
+    field(:plaid_access_token, :string)
+    field(:plaid_account_id, :string)
+    field(:plaid_item_id, :string)
+
     field(:dwolla_customer_id, :string)
 
     field(:primary_email, :string, virtual: true)
@@ -32,7 +34,7 @@ defmodule BelayBrokerage.Investor do
 
   def linked_changeset(%__MODULE__{} = struct, params) do
     fields =
-      ~w(first_name last_name address_1 city region postal_code phone access_token account_id item_id dwolla_customer_id)a
+      ~w(first_name last_name address_1 city region postal_code phone plaid_access_token plaid_account_id plaid_item_id dwolla_customer_id)a
 
     struct
     |> cast(params, fields)

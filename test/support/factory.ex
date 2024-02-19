@@ -18,9 +18,9 @@ defmodule BelayBrokerage.Factory do
       region: "PA",
       postal_code: "19103",
       phone: "123-123-1234",
-      access_token: "access_token",
-      account_id: "account_id",
-      item_id: "item_id",
+      plaid_access_token: "plaid_access_token",
+      plaid_account_id: "plaid_account_id",
+      plaid_item_id: "plaid_item_id",
       dwolla_customer_id: "dwolla_customer_id",
       auth_accounts: [build(:auth_account)]
     }
