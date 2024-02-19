@@ -18,6 +18,7 @@ defmodule BelayBrokerage.AuthAccount do
   def create_changeset(%__MODULE__{} = struct \\ %__MODULE__{}, params) do
     struct
     |> changeset(params)
+    |> validate_inclusion(:is_primary, [true])
     |> unique_constraint([:email, :investor_id])
     |> foreign_key_constraint(:investor_id)
   end
