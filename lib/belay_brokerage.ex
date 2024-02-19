@@ -37,7 +37,7 @@ defmodule BelayBrokerage do
   def create_investor(partner_id, uid, email) do
     %Investor{}
     |> Investor.create_changeset(%{auth_accounts: [%{uid: uid, email: email, is_primary: true}]})
-    |> Repo.insert!(prefix: partner_id)
+    |> Repo.insert(prefix: partner_id)
   end
 
   @spec link_investor(String.t(), String.t(), investor()) ::
