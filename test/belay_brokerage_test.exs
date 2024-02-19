@@ -86,6 +86,19 @@ defmodule BelayBrokerageTest do
     end
   end
 
+  describe "get_investor_by_email/2" do
+    test "retrieves inserted investor" do
+      %{auth_accounts: [%{email: primary_email}]} = investor = insert!(:investor)
+
+      expected_investor = %{investor | primary_email: primary_email}
+
+      assert @default_tenant
+             |> BelayBrokerage.get_investor_by_email(primary_email)
+             |> Repo.preload([:auth_accounts]) ==
+               expected_investor
+    end
+  end
+
   describe "get_investor_by_item_id/2" do
     test "retrieves inserted investor" do
       %{auth_accounts: [%{email: primary_email}]} = investor = insert!(:investor)

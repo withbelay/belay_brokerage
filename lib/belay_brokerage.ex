@@ -72,8 +72,15 @@ defmodule BelayBrokerage do
 
   @spec get_investor_by_email(String.t(), String.t()) :: Investor.t() | nil
   def get_investor_by_email(partner_id, email) do
-    with %AuthAccount{} = auth_account <- Repo.get_by(AuthAccount, [email: email], prefix: partner_id) do
-      get_investor(partner_id, auth_account.investor_id)
+    query = from(a in AuthAccount, prefix: ^partner_id, where: a.email == ^email)
+
+    case Repo.all(query) do
+      [] ->
+        nil
+
+      auth_accounts ->
+        auth_account = Enum.find(auth_accounts, & &1.is_primary)
+        get_investor(partner_id, auth_account.investor_id)
     end
   end
 
