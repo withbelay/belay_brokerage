@@ -14,6 +14,7 @@ defmodule BelayBrokerage.Factory do
       address_1: "2100 Market St",
       address_2: "Floor 5",
       city: "Philadelphia",
+      primary_email: "johndoe@email.com",
       region: "PA",
       postal_code: "19103",
       phone: "123-123-1234",
