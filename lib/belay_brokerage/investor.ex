@@ -16,20 +16,27 @@ defmodule BelayBrokerage.Investor do
     field(:item_id, :string)
     field(:dwolla_customer_id, :string)
 
+    field(:primary_email, :string, virtual: true)
+
     has_many(:auth_accounts, BelayBrokerage.AuthAccount)
 
     timestamps()
   end
 
   @spec create_changeset(__MODULE__.t(), map()) :: Ecto.Changeset.t()
-  def create_changeset(%__MODULE__{} = struct, params) do
+  def create_changeset(%__MODULE__{} = struct \\ %__MODULE__{}, params) do
     struct
-    |> changeset(params)
-    |> cast_assoc(:auth0_ids, with: &BelayBrokerage.AuthAccount.create_changeset/2)
+    |> cast(params, [])
+    |> cast_assoc(:auth_accounts, required: true, with: &BelayBrokerage.AuthAccount.create_changeset/2)
   end
 
-  def_new(
-    required: ~w(first_name last_name address_1 city region postal_code phone)a,
-    default: [{:id, {Ecto.UUID, :generate, []}}]
-  )
+  def linked_changeset(%__MODULE__{} = struct, params) do
+    struct
+    |> change(params)
+    |> validate_required(
+      ~w(first_name last_name address_1 city region postal_code phone access_token account_id item_id dwolla_customer_id)a
+    )
+  end
+
+  def_new()
 end

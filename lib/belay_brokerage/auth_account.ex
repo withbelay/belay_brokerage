@@ -7,7 +7,7 @@ defmodule BelayBrokerage.AuthAccount do
     field(:email, :string)
     field(:is_primary, :boolean)
 
-    belongs_to(:investor, BelayBrokerage.AuthAccount,
+    belongs_to(:investor, BelayBrokerage.Investor,
       foreign_key: :investor_id,
       references: :id,
       define_field: false
@@ -22,5 +22,5 @@ defmodule BelayBrokerage.AuthAccount do
     |> foreign_key_constraint(:investor_id)
   end
 
-  def_new(required: ~w(uid investor_id email is_primary)a)
+  def_new(required: ~w(uid email is_primary)a)
 end
