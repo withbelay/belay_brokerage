@@ -28,7 +28,7 @@ defmodule BelayBrokerage.Repo.Migrations.PreferEmailOverAuth0Uid do
     for %{id: auth0_uid, email: email} <- investors do
       new_investor_id = Ecto.UUID.autogenerate()
 
-      repo().query!("UPDATE #{prefix()}.investors SET id = '#{new_investor_id}';")
+      repo().query!("UPDATE #{prefix()}.investors SET id = '#{new_investor_id}' WHERE id = '#{auth0_uid}';")
       repo().query!("INSERT INTO #{prefix()}.auth_accounts (uid, investor_id, email, is_primary) VALUES ('#{auth0_uid}', '#{new_investor_id}', '#{email}', true);")
     end
   end
