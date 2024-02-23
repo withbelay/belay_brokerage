@@ -15,13 +15,15 @@ defmodule BelayBrokerage.Application do
         BelayBrokerage.Transactions.Connection,
         {BelayBrokerage.Transactions.Topology,
          connection: BelayBrokerage.Transactions.Connection,
-         queues: [[name: "belaybrokerage_transactions", durable: true, arguments: [{"x-single-active-consumer", true}]]],
+         queues: [
+           [name: "belaybrokerage_transactions_v2", durable: true, arguments: [{"x-single-active-consumer", true}]]
+         ],
          exchanges: [[name: "belaybrokerage_exchange", type: :fanout]],
          bindings: [
            [
              type: :queue,
              source: "belaybrokerage_exchange",
-             destination: "belaybrokerage_transactions"
+             destination: "belaybrokerage_transactions_v2"
            ]
          ]}
       ] ++
@@ -40,7 +42,7 @@ defmodule BelayBrokerage.Application do
   defp transaction_children(:consumer) do
     [
       {BelayBrokerage.Transactions.Consumer,
-       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions"}
+       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions_v2"}
     ]
   end
 
@@ -48,7 +50,7 @@ defmodule BelayBrokerage.Application do
     [
       {BelayBrokerage.Transactions.Producer, connection: BelayBrokerage.Transactions.Connection},
       {BelayBrokerage.Transactions.Consumer,
-       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions"}
+       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions_v2"}
     ]
   end
 end
