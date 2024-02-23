@@ -15,7 +15,7 @@ defmodule BelayBrokerage.Application do
         BelayBrokerage.Transactions.Connection,
         {BelayBrokerage.Transactions.Topology,
          connection: BelayBrokerage.Transactions.Connection,
-         queues: [[name: "belaybrokerage_transactions", durable: true]],
+         queues: [[name: "belaybrokerage_transactions", durable: true, arguments: [{"x-single-active-consumer", true}]]],
          exchanges: [[name: "belaybrokerage_exchange", type: :fanout]],
          bindings: [
            [
