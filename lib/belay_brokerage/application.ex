@@ -42,7 +42,7 @@ defmodule BelayBrokerage.Application do
   defp transaction_children(:consumer) do
     [
       {BelayBrokerage.Transactions.Consumer,
-       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions"}
+       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions_v2"}
     ]
   end
 
@@ -50,7 +50,7 @@ defmodule BelayBrokerage.Application do
     [
       {BelayBrokerage.Transactions.Producer, connection: BelayBrokerage.Transactions.Connection},
       {BelayBrokerage.Transactions.Consumer,
-       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions"}
+       connection: BelayBrokerage.Transactions.Connection, queue: "belaybrokerage_transactions_v2"}
     ]
   end
 end
