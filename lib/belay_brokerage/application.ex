@@ -23,7 +23,7 @@ defmodule BelayBrokerage.Application do
            [
              type: :queue,
              source: "belaybrokerage_exchange",
-             destination: "belaybrokerage_transactions"
+             destination: "belaybrokerage_transactions_v2"
            ]
          ]}
       ] ++
